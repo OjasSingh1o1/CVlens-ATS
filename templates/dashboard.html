@@ -1,0 +1,1147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CV Lens — Aesthetic Intelligence</title>
+  <meta name="description" content="CV Lens: AI-powered ATS resume formatting and keyword analysis.">
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            creamy: {
+              50: '#fcfcfc',
+              100: '#fdfbf7', // Base background
+              200: '#f5f4ef', // Subtle surface
+              300: '#eae8e1', // Borders
+              400: '#d5d2c8',
+              800: '#4a4843',
+              900: '#2a2926', // Main text
+            }
+          },
+          fontFamily: {
+            sans: ['Inter', 'system-ui', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace'],
+          },
+          boxShadow: {
+            'soft': '0 4px 24px -6px rgba(0, 0, 0, 0.04)',
+            'float': '0 12px 32px -8px rgba(0, 0, 0, 0.08)',
+          }
+        }
+      }
+    };
+  </script>
+  <style>
+    body { 
+      background-color: #fdfbf7; 
+      background-image: radial-gradient(#eae8e1 1px, transparent 1px);
+      background-size: 32px 32px;
+      color: #2a2926; 
+      scroll-behavior: smooth; 
+    }
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: #eae8e1; border-radius: 4px; }
+    ::-webkit-scrollbar-thumb:hover { background: #d5d2c8; }
+
+    /* Logo Styling */
+    .cvlens-logo {
+      font-family: 'Times New Roman', Times, serif;
+      letter-spacing: -0.01em;
+      line-height: 1;
+      display: inline-flex;
+      align-items: baseline;
+      gap: 1px;
+      color: #111;
+    }
+    .cvlens-logo .cv { font-weight: 700; font-style: normal; }
+    .cvlens-logo .lens { font-weight: 400; font-style: italic; }
+
+    /* Floating Nav - Magnification Effect */
+    .nav-group {
+      color: #a3a19b;
+      transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+      position: relative;
+      transform-origin: left center;
+      opacity: 1;
+    }
+    .nav-group.active { color: #2a2926; }
+    
+    #floating-nav:hover .nav-group {
+      opacity: 0.4;
+      transform: scale(0.9);
+      color: #c9c7bf;
+    }
+    
+    /* The item being hovered */
+    #floating-nav .nav-group:hover {
+      opacity: 1;
+      color: #2a2926;
+      transform: scale(1.35) translateX(8px);
+      z-index: 10;
+    }
+    
+    /* 1 item adjacent (before and after) */
+    #floating-nav .nav-group:has(+ .nav-group:hover),
+    #floating-nav .nav-group:hover + .nav-group {
+      opacity: 0.8;
+      color: #a3a19b;
+      transform: scale(1.15) translateX(4px);
+      z-index: 9;
+    }
+    
+    /* 2 items adjacent (before and after) */
+    #floating-nav .nav-group:has(+ .nav-group + .nav-group:hover),
+    #floating-nav .nav-group:hover + .nav-group + .nav-group {
+      opacity: 0.6;
+      color: #b5b3ab;
+      transform: scale(1.02) translateX(1px);
+      z-index: 8;
+    }
+    
+    .nav-dot {
+      width: 4px;
+      height: 4px;
+      background-color: currentColor;
+      border-radius: 50%;
+      transition: transform 0.3s ease, background-color 0.3s ease;
+    }
+    .nav-group.active .nav-dot { transform: scale(1.5); }
+    
+    .nav-text {
+      font-size: 12px;
+      font-weight: 500;
+      letter-spacing: 0.05em;
+      transition: transform 0.3s ease;
+    }
+    .nav-group.active .nav-text { transform: translateX(4px); font-weight: 600; }
+
+    /* Minimal Input / Cards */
+    .minimal-card {
+      background: #ffffff;
+      border: 1px solid #eae8e1;
+      border-radius: 16px;
+      box-shadow: 0 4px 24px -6px rgba(0,0,0,0.02);
+      transition: all 0.3s ease;
+    }
+    .minimal-card:hover {
+      border-color: #d5d2c8;
+      box-shadow: 0 12px 32px -8px rgba(0,0,0,0.05);
+    }
+
+    .heading-tnr {
+      font-family: 'Times New Roman', Times, serif !important;
+      font-weight: bold !important;
+    }
+    .desc-tnr {
+      font-family: 'Times New Roman', Times, serif !important;
+      font-style: italic !important;
+      font-weight: normal !important;
+    }
+
+    .drop-zone {
+      border: 1px dashed #d5d2c8;
+      border-radius: 12px;
+      background: #fdfbf7;
+      transition: all 0.2s ease;
+      cursor: pointer;
+    }
+    .drop-zone:hover, .drop-zone.dragging {
+      border-color: #2a2926;
+      background: #f5f4ef;
+    }
+
+    .minimal-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      background: #2a2926;
+      color: #ffffff;
+      padding: 12px 24px;
+      border-radius: 10px;
+      font-size: 14px;
+      font-weight: 500;
+      transition: all 0.2s ease;
+    }
+    .minimal-btn:hover { background: #111; transform: translateY(-1px); box-shadow: 0 6px 16px -4px rgba(0,0,0,0.1); }
+    
+    .minimal-btn-outline {
+      background: transparent;
+      color: #2a2926;
+      border: 1px solid #d5d2c8;
+    }
+    .minimal-btn-outline:hover { background: #f5f4ef; border-color: #2a2926; }
+
+    .minimal-textarea {
+      background: #fdfbf7;
+      border: 1px solid #eae8e1;
+      border-radius: 12px;
+      padding: 16px;
+      width: 100%;
+      font-family: 'Inter', sans-serif;
+      font-size: 14px;
+      color: #2a2926;
+      resize: vertical;
+      transition: border-color 0.2s;
+    }
+    .minimal-textarea:focus { outline: none; border-color: #2a2926; }
+    .minimal-textarea:empty:before { content: attr(placeholder); color: #a3a19b; pointer-events: none; display: block; }
+
+    .result-output {
+      background: #f5f4ef;
+      border: 1px solid #eae8e1;
+      border-radius: 12px;
+      padding: 24px;
+      font-family: 'Inter', sans-serif;
+      font-size: 13px;
+      line-height: 1.6;
+      color: #4a4843;
+      max-height: 400px;
+      overflow-y: auto;
+    }
+    .result-output h1, .result-output h2, .result-output h3 { font-family: 'Inter', sans-serif; font-weight: 600; color: #2a2926; margin-top: 1em; margin-bottom: 0.5em; }
+    .result-output h1 { font-size: 1.25em; }
+    .result-output h2 { font-size: 1.1em; }
+    .result-output h3 { font-size: 1em; }
+    .result-output strong { font-weight: 600; color: #2a2926; }
+    .result-output ul { margin-left: 1.5em; list-style-type: disc; margin-bottom: 1em; }
+    .result-output li { margin-bottom: 0.25em; }
+    .result-output p { margin-bottom: 0.75em; }
+
+    /* === Word-doc style rendered output === */
+    .doc-view {
+      background: #ffffff;
+      border: 1px solid #e0ddd6;
+      border-radius: 12px;
+      padding: 40px 48px;
+      font-family: 'Times New Roman', Times, serif;
+      font-size: 14px;
+      line-height: 1.7;
+      color: #111;
+      min-height: 200px;
+      max-height: 560px;
+      overflow-y: auto;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.04);
+      outline: none;
+    }
+    .doc-view h1 {
+      font-size: 22px;
+      font-weight: 700;
+      text-align: center;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      margin: 0 0 4px 0;
+      border-bottom: 2px solid #111;
+      padding-bottom: 10px;
+      font-family: 'Times New Roman', serif;
+    }
+    .doc-view h2 {
+      font-size: 11px;
+      font-family: 'Inter', sans-serif;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: #222;
+      border-bottom: 1px solid #ccc;
+      padding-bottom: 4px;
+      margin: 20px 0 10px 0;
+    }
+    .doc-view h3 {
+      font-size: 14px;
+      font-weight: 700;
+      margin: 12px 0 2px 0;
+      font-family: 'Times New Roman', serif;
+    }
+    .doc-view p { margin: 4px 0 8px 0; }
+    .doc-view ul { margin: 4px 0 10px 18px; padding: 0; }
+    .doc-view li { margin-bottom: 3px; }
+    .doc-view strong { font-weight: 700; }
+    .doc-view em { font-style: italic; }
+    /* === Clean ATS table === */
+    .doc-view table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 10px 0 18px 0;
+      font-size: 13px;
+      font-family: 'Inter', sans-serif;
+    }
+    .doc-view table th {
+      background: #f0ede6;
+      text-align: left;
+      padding: 7px 12px;
+      font-weight: 600;
+      font-size: 11px;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      border: 1px solid #d5d2c8;
+      color: #3a3835;
+    }
+    .doc-view table td {
+      padding: 7px 12px;
+      border: 1px solid #d5d2c8;
+      vertical-align: top;
+    }
+    .doc-view table tr:nth-child(even) td { background: #faf9f6; }
+    /* === Print / Export styles === */
+    @media print {
+      body * { visibility: hidden; }
+      #preview-doc-canvas, #preview-doc-canvas * { visibility: visible; }
+      #preview-doc-canvas {
+        position: absolute; left: 0; top: 0;
+        width: 100%; padding: 60px 80px;
+        box-shadow: none; border: none;
+        font-size: 13px;
+      }
+    }
+
+    /* Layout */
+    .section-wrapper {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding: 80px 40px 80px 140px;
+      border-bottom: 1px solid #e0ddd6;
+    }
+    .section-wrapper:last-of-type {
+      border-bottom: none;
+    }
+    .section-content { max-width: 1000px; width: 100%; margin: 0 auto; }
+    
+    .section-label {
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: #8c8981;
+      margin-bottom: 16px;
+    }
+
+    /* Preview Doc (Module 04) - same as doc-view but larger */
+    .resume-canvas {
+      background: #ffffff;
+      border: 1px solid #e0ddd6;
+      box-shadow: 0 20px 60px -12px rgba(0,0,0,0.08);
+      max-width: 820px;
+      width: 100%;
+      padding: 60px 72px;
+      font-family: 'Times New Roman', Times, serif;
+      font-size: 14px;
+      line-height: 1.7;
+      color: #111;
+      outline: none;
+    }
+    .resume-canvas h1 {
+      font-size: 24px; font-weight: 700; text-align: center;
+      text-transform: uppercase; letter-spacing: 0.06em;
+      margin: 0 0 4px 0; border-bottom: 2px solid #111;
+      padding-bottom: 12px; font-family: 'Times New Roman', serif;
+    }
+    .resume-canvas h2 {
+      font-size: 11px; font-family: 'Inter', sans-serif;
+      font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase;
+      color: #222; border-bottom: 1px solid #ccc;
+      padding-bottom: 4px; margin: 22px 0 10px 0;
+    }
+    .resume-canvas h3 { font-size: 14px; font-weight: 700; margin: 12px 0 2px 0; }
+    .resume-canvas p { margin: 4px 0 8px 0; }
+    .resume-canvas ul { margin: 4px 0 10px 18px; padding: 0; }
+    .resume-canvas li { margin-bottom: 3px; }
+    .resume-canvas table {
+      width: 100%; border-collapse: collapse;
+      margin: 10px 0 18px 0; font-size: 13px;
+      font-family: 'Inter', sans-serif;
+    }
+    .resume-canvas table th {
+      background: #f0ede6; text-align: left;
+      padding: 8px 14px; font-weight: 600; font-size: 11px;
+      letter-spacing: 0.04em; text-transform: uppercase;
+      border: 1px solid #d5d2c8; color: #3a3835;
+    }
+    .resume-canvas table td {
+      padding: 8px 14px; border: 1px solid #d5d2c8; vertical-align: top;
+    }
+    .resume-canvas table tr:nth-child(even) td { background: #faf9f6; }
+
+    #spa-toast {
+      position: fixed; bottom: 32px; left: 50%; transform: translate(-50%, 40px);
+      background: #2a2926; color: #fff; padding: 12px 24px; border-radius: 100px;
+      font-size: 13px; font-weight: 500; opacity: 0; pointer-events: none;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); z-index: 100;
+    }
+    #spa-toast.show { transform: translate(-50%, 0); opacity: 1; }
+  </style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════
+     FLOATING NAV (LEFT MIDDLE)
+═══════════════════════════════════════ -->
+<nav class="fixed left-8 top-1/2 -translate-y-1/2 z-50 flex flex-col gap-5" id="floating-nav">
+  
+  <div class="nav-group flex items-center gap-3 cursor-pointer active" onclick="scrollToSection('section-home')" data-target="section-home">
+    <div class="nav-dot"></div>
+    <span class="nav-text">Home</span>
+  </div>
+
+  <div class="nav-group flex items-center gap-3 cursor-pointer" onclick="scrollToSection('section-upload')" data-target="section-upload">
+    <div class="nav-dot"></div>
+    <span class="nav-text">Upload</span>
+  </div>
+  
+  <div class="nav-group flex items-center gap-3 cursor-pointer" onclick="scrollToSection('section-formatter')" data-target="section-formatter">
+    <div class="nav-dot"></div>
+    <span class="nav-text">Formatter</span>
+  </div>
+
+  <div class="nav-group flex items-center gap-3 cursor-pointer" onclick="scrollToSection('section-matcher')" data-target="section-matcher">
+    <div class="nav-dot"></div>
+    <span class="nav-text">Matcher</span>
+  </div>
+
+  <div class="nav-group flex items-center gap-3 cursor-pointer" onclick="scrollToSection('section-analyzer')" data-target="section-analyzer">
+    <div class="nav-dot"></div>
+    <span class="nav-text">Analyzer</span>
+  </div>
+
+  <div class="nav-group flex items-center cursor-pointer" onclick="scrollToSection('section-preview')" data-target="section-preview">
+    <div class="nav-dot"></div>
+    <span class="nav-text">Preview</span>
+  </div>
+
+  <div class="nav-group flex items-center cursor-pointer" onclick="scrollToSection('section-account')" data-target="section-account">
+    <div class="nav-dot"></div>
+    <span class="nav-text">Account</span>
+  </div>
+
+  <div class="nav-group flex items-center cursor-pointer" onclick="scrollToSection('section-settings')" data-target="section-settings">
+    <div class="nav-dot"></div>
+    <span class="nav-text">Settings</span>
+  </div>
+
+</nav>
+
+<!-- ═══════════════════════════════════════
+     MAIN CONTENT
+═══════════════════════════════════════ -->
+
+<!-- 1. HOME SECTION -->
+<section id="section-home" class="relative overflow-hidden w-full h-screen flex flex-col justify-center items-center border-b border-creamy-300">
+  <!-- Interactive 3D Particle Wave Canvas -->
+  <canvas id="wave-canvas" class="fixed inset-0 w-full h-full pointer-events-none" style="z-index: -1;"></canvas>
+  
+  <!-- Subtle background glow -->
+  <div class="fixed -top-[20%] -right-[10%] w-[60vw] h-[60vw] bg-white rounded-full opacity-60 blur-3xl pointer-events-none" style="z-index: -2;"></div>
+  
+  <div class="relative z-10 text-center flex flex-col items-center pointer-events-none">
+    <div class="cvlens-logo text-[80px] mb-6 drop-shadow-xl select-none" style="text-shadow: 0 4px 24px rgba(255,255,255,0.8);">
+      <span class="cv">CV</span><span class="lens">lens</span>
+    </div>
+    <p class="text-lg text-creamy-800 max-w-lg mb-12 font-light select-none">
+      Aesthetic ATS intelligence. Format, match, and analyze your resume in a clean, minimalist workspace designed for clarity.
+    </p>
+    <button onclick="scrollToSection('section-upload')" class="minimal-btn pointer-events-auto shadow-float mb-12">
+      Begin Analysis <span class="material-symbols-outlined text-sm">arrow_downward</span>
+    </button>
+
+    <div class="pointer-events-auto text-left max-w-2xl mx-auto mt-4">
+      <div class="mb-6">
+        <p class="text-sm text-creamy-800 leading-relaxed desc-tnr">
+          With modern hiring heavily relying on automated ATS systems, highly qualified candidates are routinely filtered out simply due to unoptimized resume formatting or missing keywords. CVLens bridges this gap by offering an aesthetic, AI-driven workspace that reverse-engineers the ATS process. It cleanly restructures your resume, benchmarks it against target job descriptions, and extracts missing core terminology, ensuring your application gets the visibility it deserves.
+        </p>
+      </div>
+      
+      <div>
+        <h4 class="text-lg heading-tnr font-bold text-creamy-900 mb-2">How it works</h4>
+        <ul class="text-sm text-creamy-800 leading-relaxed desc-tnr space-y-2 ml-4" style="list-style-type: circle;">
+          <li><strong class="font-bold text-creamy-950">1. Upload Context:</strong> Start by uploading your PDF resume and pasting a target Job Description. This context is shared seamlessly across all modules.</li>
+          <li><strong class="font-bold text-creamy-950">2. Format:</strong> Automatically restructure your resume into an ATS-friendly, clean document layout without losing critical content.</li>
+          <li><strong class="font-bold text-creamy-950">3. Match & Analyze:</strong> Benchmark your qualifications against the job description to receive a quantitative score, uncover knowledge gaps, and extract core terminology.</li>
+          <li><strong class="font-bold text-creamy-950">4. Generate:</strong> Use AI to reverse-engineer an ideal job description based on your current resume to discover roles that perfectly fit your background.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 1.5. GLOBAL INPUT SECTION -->
+<section id="section-upload" class="section-wrapper pb-10">
+  <div class="section-content">
+    <div class="section-label">Module 00</div>
+    <h2 class="text-4xl heading-tnr mb-3 tracking-tight">Document Upload</h2>
+    <p class="text-creamy-800 mb-12 max-w-xl desc-tnr">Upload your resume and optionally provide a job description once. All modules will use this context.</p>
+
+    <div class="grid grid-cols-1 gap-8">
+      <div class="minimal-card p-6">
+        <label class="block text-sm font-medium mb-3">Resume PDF (Required)</label>
+        <div class="drop-zone p-8 flex flex-col items-center justify-center text-center gap-2"
+             onclick="document.getElementById('global-file').click()">
+          <span class="material-symbols-outlined text-creamy-400 text-3xl">upload_file</span>
+          <span class="text-sm text-creamy-800" id="global-filename">Click or drop resume</span>
+          <input type="file" id="global-file" accept=".pdf" class="hidden" onchange="updateFilename(this, 'global-filename')">
+        </div>
+      </div>
+      
+      <div class="minimal-card p-6 flex flex-col">
+        <div class="flex items-center justify-between mb-3">
+          <label class="block text-sm font-medium">Job Description (Optional)</label>
+          <button id="gen-jd-btn" onclick="generateJD()" class="text-xs text-creamy-800 hover:text-black flex items-center gap-1 transition-colors">
+            <span class="material-symbols-outlined text-[14px]">auto_awesome</span> Auto-Generate
+          </button>
+        </div>
+        <div id="global-jd" contenteditable="true" class="minimal-textarea flex-1 overflow-y-auto" style="min-height: 120px;" placeholder="Paste JD here..."></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 2. FORMATTER SECTION -->
+<section id="section-formatter" class="section-wrapper">
+  <div class="section-content">
+    <div class="section-label">Module 01</div>
+    <h2 class="text-4xl heading-tnr mb-3 tracking-tight">Resume Formatter</h2>
+    <p class="text-creamy-800 mb-12 max-w-xl desc-tnr">Transform your resume into a minimal, parser-friendly format engineered to pass ATS screens gracefully.</p>
+
+    <div class="grid grid-cols-1 lg:grid-cols-4 gap-8">
+      <div class="lg:col-span-1 flex flex-col gap-6">
+        <button id="fmt-btn" onclick="runFormatter()" class="minimal-btn w-full py-4 text-base">Format Document</button>
+        <p class="text-xs text-creamy-800 leading-relaxed px-2">Clicking this will process the globally uploaded resume to generate a parser-safe format.</p>
+      </div>
+
+      <div class="lg:col-span-3">
+        <div class="minimal-card p-6 h-full flex flex-col">
+          <div class="flex items-center justify-between mb-4">
+            <span class="text-sm font-medium">Standardized Output</span>
+            <div class="flex items-center gap-3">
+              <button onclick="copyDocText('fmt-out')" class="text-xs text-creamy-800 hover:text-black flex items-center gap-1">
+                <span class="material-symbols-outlined text-[14px]">content_copy</span> Copy
+              </button>
+              <button onclick="sendToPreview()" id="preview-btn" class="hidden text-xs bg-creamy-900 text-white px-3 py-1.5 rounded-lg flex items-center gap-1 hover:bg-black transition-colors">
+                <span class="material-symbols-outlined text-[14px]">preview</span> View in Preview
+              </button>
+            </div>
+          </div>
+          <div id="fmt-load" class="hidden flex-1 items-center justify-center">
+            <span class="material-symbols-outlined animate-spin text-creamy-400 text-3xl">sync</span>
+          </div>
+          <div id="fmt-err" class="hidden text-sm text-red-600 bg-red-50 p-4 rounded-lg"></div>
+          <!-- Rendered doc view (editable) -->
+          <div id="fmt-out" class="doc-view flex-1 text-creamy-400" contenteditable="true" spellcheck="false">Formatted document will appear here as a clean, editable preview...</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 3. MATCHER SECTION -->
+<section id="section-matcher" class="section-wrapper">
+  <div class="section-content">
+    <div class="section-label">Module 02</div>
+    <h2 class="text-4xl heading-tnr mb-3 tracking-tight">JD Matcher</h2>
+    <p class="text-creamy-800 mb-12 max-w-xl desc-tnr">Benchmark your resume against a job description. Receive a minimal, precise fit analysis.</p>
+
+    <div class="grid grid-cols-1 lg:grid-cols-4 gap-8">
+      <div class="lg:col-span-1 flex flex-col gap-6">
+        <button id="mat-btn" onclick="runMatcher()" class="minimal-btn w-full py-4 text-base">Analyze Fit</button>
+        <p class="text-xs text-creamy-800 leading-relaxed px-2">Calculates alignment using the global resume and job description.</p>
+      </div>
+
+      <div class="lg:col-span-3">
+        <div class="minimal-card p-6 h-full flex flex-col">
+          <div class="flex items-center justify-between mb-4">
+            <span class="text-sm font-medium">Alignment Analysis</span>
+            <button onclick="copyResult('mat-out')" class="text-xs text-creamy-800 hover:text-black flex items-center gap-1">
+              <span class="material-symbols-outlined text-[14px]">content_copy</span> Copy
+            </button>
+          </div>
+          <div id="mat-load" class="hidden flex-1 items-center justify-center">
+            <span class="material-symbols-outlined animate-spin text-creamy-400 text-3xl">sync</span>
+          </div>
+          <div id="mat-err" class="hidden text-sm text-red-600 bg-red-50 p-4 rounded-lg"></div>
+          <div id="mat-out" class="result-output flex-1 text-creamy-400">Analysis results will appear here...</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 4. ANALYZER SECTION -->
+<section id="section-analyzer" class="section-wrapper">
+  <div class="section-content">
+    <div class="section-label">Module 03</div>
+    <h2 class="text-4xl heading-tnr mb-3 tracking-tight">Keyword Analyzer</h2>
+    <p class="text-creamy-800 mb-12 max-w-xl desc-tnr">Extract core terminology and cross-reference skills transparently.</p>
+
+    <div class="grid grid-cols-1 lg:grid-cols-4 gap-8">
+      <div class="lg:col-span-1 flex flex-col gap-6">
+        <button id="kw-btn" onclick="runAnalyzer()" class="minimal-btn w-full py-4 text-base">Extract Keywords</button>
+        <p class="text-xs text-creamy-800 leading-relaxed px-2">Identifies and cross-references core terminology from your global document inputs.</p>
+      </div>
+
+      <div class="lg:col-span-3">
+        <div class="minimal-card p-6 h-full flex flex-col">
+          <div class="flex items-center justify-between mb-4">
+            <span class="text-sm font-medium">Keyword Map</span>
+            <button onclick="copyResult('kw-out')" class="text-xs text-creamy-800 hover:text-black flex items-center gap-1">
+              <span class="material-symbols-outlined text-[14px]">content_copy</span> Copy
+            </button>
+          </div>
+          <div id="kw-load" class="hidden flex-1 items-center justify-center">
+            <span class="material-symbols-outlined animate-spin text-creamy-400 text-3xl">sync</span>
+          </div>
+          <div id="kw-err" class="hidden text-sm text-red-600 bg-red-50 p-4 rounded-lg"></div>
+          <div id="kw-out" class="result-output flex-1 text-creamy-400">Extracted keywords will appear here...</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 5. PREVIEW SECTION -->
+<section id="section-preview" class="section-wrapper pb-32">
+  <div class="section-content flex flex-col items-center">
+    <div class="w-full max-w-[820px] mb-8">
+      <div class="section-label text-center">Module 04</div>
+      <h2 class="text-4xl heading-tnr mb-3 tracking-tight text-center">Preview &amp; Export</h2>
+      <p class="text-creamy-800 mb-8 text-center desc-tnr">Your formatted resume, ready to edit and export. Click any text to edit directly.</p>
+
+      <div class="flex items-center justify-between bg-white px-6 py-4 rounded-2xl border border-creamy-300 shadow-sm mb-6">
+        <div class="flex items-center gap-3">
+          <span class="material-symbols-outlined text-creamy-400 text-lg">description</span>
+          <div>
+            <div class="text-sm font-medium" id="preview-doc-label">No document formatted yet</div>
+            <div class="text-xs text-creamy-400">Format your resume above, then click "View in Preview"</div>
+          </div>
+        </div>
+        <div class="flex gap-2">
+          <button onclick="window.print()" class="minimal-btn-outline minimal-btn !py-2 !px-4 !text-xs !rounded-full flex items-center gap-1">
+            <span class="material-symbols-outlined text-[13px]">print</span> Print
+          </button>
+          <button onclick="exportPDF()" class="minimal-btn-outline minimal-btn !py-2 !px-4 !text-xs !rounded-full flex items-center gap-1">
+            <span class="material-symbols-outlined text-[13px]">picture_as_pdf</span> Export PDF
+          </button>
+          <button onclick="exportWord()" class="minimal-btn !py-2 !px-4 !text-xs !rounded-full flex items-center gap-1">
+            <span class="material-symbols-outlined text-[13px]">download</span> Export Word
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Live editable resume canvas populated from formatter -->
+    <div class="resume-canvas" id="preview-doc-canvas" contenteditable="true" spellcheck="false">
+      <div style="text-align:center;padding:60px 0;font-family:'Inter',sans-serif;">
+        <span class="material-symbols-outlined" style="font-size:48px;color:#d5d2c8;display:block;margin-bottom:16px;">description</span>
+        <p style="font-size:15px;color:#8c8981;margin:0 0 8px 0;">No formatted resume yet</p>
+        <p style="font-size:13px;color:#b0ada8;margin:0;">Go to the Resume Formatter above &rarr; click <strong>Format Document</strong> &rarr; then click <strong>View in Preview</strong></p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 6. ACCOUNT SECTION -->
+<section id="section-account" class="section-wrapper pb-32">
+  <div class="section-content flex flex-col items-center">
+    <div class="w-full max-w-[800px] mb-8 text-center">
+      <div class="section-label">Module 05</div>
+      <h2 class="text-4xl heading-tnr mb-3 tracking-tight">Account</h2>
+      <p class="text-creamy-800 mb-8 desc-tnr">Manage your profile and subscription details.</p>
+      <div class="minimal-card p-12 text-center text-creamy-400">
+        Account preferences and billing will appear here.
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 7. SETTINGS SECTION -->
+<section id="section-settings" class="section-wrapper pb-32">
+  <div class="section-content flex flex-col items-center">
+    <div class="w-full max-w-[800px] mb-8 text-center">
+      <div class="section-label">Module 06</div>
+      <h2 class="text-4xl heading-tnr mb-3 tracking-tight">Settings</h2>
+      <p class="text-creamy-800 mb-8 desc-tnr">Configure application preferences and integrations.</p>
+      <div class="minimal-card p-12 text-center text-creamy-400">
+        Application settings and API keys will appear here.
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Toast -->
+<div id="spa-toast">Copied to clipboard!</div>
+
+<script>
+  // -- Smooth Scroll --
+  function scrollToSection(id) {
+    const el = document.getElementById(id);
+    if(el) el.scrollIntoView({ behavior: 'smooth' });
+  }
+
+  // -- Scroll Spy for Navigation Lines --
+  const sections = ['section-home','section-upload','section-formatter','section-matcher','section-analyzer','section-preview','section-account','section-settings'];
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if(entry.isIntersecting) {
+        document.querySelectorAll('.nav-group').forEach(n => n.classList.remove('active'));
+        const navEl = document.querySelector(`.nav-group[data-target="${entry.target.id}"]`);
+        if(navEl) navEl.classList.add('active');
+      }
+    });
+  }, { threshold: 0.4 });
+
+  sections.forEach(id => {
+    const el = document.getElementById(id);
+    if(el) observer.observe(el);
+  });
+
+  // -- File Input UX --
+  function updateFilename(input, id) {
+    if(input.files && input.files[0]) {
+      document.getElementById(id).textContent = input.files[0].name;
+    }
+  }
+
+  // -- Toast / Copy --
+  function showToast(msg) {
+    const t = document.getElementById('spa-toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 3000);
+  }
+  function copyResult(id) {
+    const text = document.getElementById(id).innerText;
+    navigator.clipboard.writeText(text).then(() => showToast('Copied to clipboard!'));
+  }
+
+  // -- API Integration --
+  async function callAPI(action, loadId, outId, errId, btnId, requiresJd = false) {
+    const file = document.getElementById('global-file').files[0];
+    if(!file) { 
+      alert('Please upload a Resume PDF in the Module 00: Document Upload section first.');
+      scrollToSection('section-upload');
+      return; 
+    }
+    
+    const jdVal = document.getElementById('global-jd').innerText;
+    if(requiresJd && !jdVal.trim()) {
+      alert('Please paste a Job Description in the Module 00: Document Upload section for this feature.');
+      scrollToSection('section-upload');
+      return;
+    }
+    
+    const btn = document.getElementById(btnId);
+    const load = document.getElementById(loadId);
+    const out = document.getElementById(outId);
+    const err = document.getElementById(errId);
+    
+    btn.disabled = true;
+    out.classList.add('hidden');
+    err.classList.add('hidden');
+    load.classList.remove('hidden');
+    load.classList.add('flex');
+
+    const fd = new FormData();
+    fd.append('resume', file);
+    fd.append('action', action);
+    if(jdVal) fd.append('job_description', jdVal);
+
+    try {
+      const res = await fetch('/api/analyze', { method: 'POST', body: fd });
+      const data = await res.json();
+      load.classList.add('hidden');
+      load.classList.remove('flex');
+      out.classList.remove('hidden');
+      
+      if(res.ok && data.result) {
+        // For formatter: render as a Word-doc style HTML
+        if(action === 'format') {
+          renderDocView(out, data.result);
+          // Show the "View in Preview" button
+          document.getElementById('preview-btn').classList.remove('hidden');
+          // Store raw markdown for export
+          window._lastFormattedMarkdown = data.result;
+          window._lastFormattedHTML = out.innerHTML;
+        } else if(action === 'match') {
+          out.classList.remove('doc-view');
+          out.classList.add('result-output');
+          out.contentEditable = 'false';
+          renderMatcherUI(out, data);
+        } else {
+          // For analyzer / generate_jd: use basic markdown rendering
+          out.classList.remove('doc-view');
+          out.classList.add('result-output');
+          out.contentEditable = 'false';
+          if(typeof marked !== 'undefined') {
+            out.innerHTML = marked.parse(data.result);
+          } else {
+            out.innerText = data.result;
+          }
+          out.style.color = '#2a2926';
+        }
+      } else {
+        err.textContent = data.error || 'Failed.';
+        err.classList.remove('hidden');
+      }
+    } catch(e) {
+      load.classList.add('hidden'); load.classList.remove('flex');
+      err.textContent = 'Error: ' + e.message;
+      err.classList.remove('hidden');
+    } finally {
+      btn.disabled = false;
+    }
+  }
+
+  // Render markdown as Word-doc style HTML inside a doc-view element
+  function renderDocView(el, markdownText) {
+    el.classList.add('doc-view');
+    el.classList.remove('result-output');
+    el.contentEditable = 'true';
+    el.style.color = '#111';
+    if(typeof marked !== 'undefined') {
+      el.innerHTML = marked.parse(markdownText);
+    } else {
+      el.innerText = markdownText;
+    }
+    // Fix numbered list headers that look like "1. Section Name"
+    el.querySelectorAll('ol > li > strong, ol > li > p > strong').forEach(s => {
+      const li = s.closest('li');
+      if(li && li.children.length <= 2) {
+        li.style.listStyleType = 'none';
+        li.style.fontWeight = '700';
+        li.style.marginTop = '16px';
+      }
+    });
+  }
+
+  // Send the formatted output to the Preview section
+  function sendToPreview() {
+    const fmtOut = document.getElementById('fmt-out');
+    const canvas = document.getElementById('preview-doc-canvas');
+    const label = document.getElementById('preview-doc-label');
+    if(!fmtOut || !canvas) return;
+    
+    // Clone the rendered content into the preview canvas
+    canvas.innerHTML = fmtOut.innerHTML;
+    
+    // Update label with filename
+    const file = document.getElementById('global-file').files[0];
+    label.textContent = file ? file.name.replace('.pdf', '') + ' — Formatted Resume' : 'Formatted Resume';
+    
+    showToast('Sent to Preview & Export!');
+    setTimeout(() => scrollToSection('section-preview'), 400);
+  }
+
+  // Copy plain text from a doc-view or result-output
+  function copyDocText(id) {
+    const el = document.getElementById(id);
+    const text = el.innerText;
+    navigator.clipboard.writeText(text).then(() => showToast('Copied to clipboard!'));
+  }
+
+  // Export as PDF via print
+  function exportPDF() {
+    const canvas = document.getElementById('preview-doc-canvas');
+    if(!canvas || canvas.innerText.trim().length < 50) {
+      showToast('Please format a resume first, then send it to Preview.');
+      return;
+    }
+    window.print();
+  }
+
+  // Export as Word (.docx) via Blob download
+  function exportWord() {
+    const canvas = document.getElementById('preview-doc-canvas');
+    if(!canvas || canvas.innerText.trim().length < 50) {
+      showToast('Please format a resume and send it to Preview first.');
+      return;
+    }
+
+    const htmlContent = `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <meta charset="utf-8">
+        <style>
+          body { font-family: 'Times New Roman', Times, serif; font-size: 12pt; color: #111; margin: 72pt 72pt 72pt 72pt; }
+          h1 { font-size: 18pt; text-align: center; text-transform: uppercase; letter-spacing: 2pt; border-bottom: 2px solid #111; padding-bottom: 8pt; margin-bottom: 12pt; }
+          h2 { font-size: 9pt; font-family: Arial, sans-serif; text-transform: uppercase; letter-spacing: 1.5pt; font-weight: bold; border-bottom: 1px solid #ccc; padding-bottom: 3pt; margin: 18pt 0 8pt 0; }
+          h3 { font-size: 12pt; font-weight: bold; margin: 10pt 0 3pt 0; }
+          p { margin: 3pt 0 6pt 0; line-height: 1.5; }
+          ul { margin: 3pt 0 8pt 12pt; }
+          li { margin-bottom: 2pt; }
+          table { width: 100%; border-collapse: collapse; margin: 8pt 0 14pt 0; font-size: 10pt; font-family: Arial, sans-serif; }
+          th { background: #f0ede6; padding: 6pt 10pt; font-weight: bold; font-size: 8pt; text-transform: uppercase; letter-spacing: 0.5pt; border: 1px solid #ccc; text-align: left; }
+          td { padding: 6pt 10pt; border: 1px solid #ccc; vertical-align: top; }
+          tr:nth-child(even) td { background: #faf9f6; }
+        </style>
+      </head>
+      <body>${canvas.innerHTML}</body>
+      </html>`;
+
+    const blob = new Blob([htmlContent], { type: 'application/msword' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    const filename = (document.getElementById('global-file').files[0]?.name || 'resume').replace('.pdf','') + '_formatted.doc';
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    showToast('Word document downloaded!');
+  }
+
+  function renderMatcherUI(el, data) {
+    let parsed;
+    try {
+      let cleanJson = data.result.trim();
+      if(cleanJson.startsWith('```json')) {
+        cleanJson = cleanJson.replace(/^```json\s*/, '').replace(/\s*```$/, '');
+      } else if(cleanJson.startsWith('```')) {
+        cleanJson = cleanJson.replace(/^```\s*/, '').replace(/\s*```$/, '');
+      }
+      parsed = JSON.parse(cleanJson);
+    } catch(e) {
+      console.error("Failed to parse matcher JSON response:", e);
+      if(typeof marked !== 'undefined') {
+        el.innerHTML = marked.parse(data.result);
+      } else {
+        el.innerText = data.result;
+      }
+      return;
+    }
+
+    const score = Math.max(0, Math.min(100, parseInt(parsed.rating || 0)));
+    const circumference = 2 * Math.PI * 42;
+    const offset = circumference - (score / 100) * circumference;
+
+    let scoreColor = '#10b981';
+    if (score < 50) {
+      scoreColor = '#ef4444';
+    } else if (score < 75) {
+      scoreColor = '#f59e0b';
+    }
+
+    const prosList = (parsed.pros || []).map(p => `
+      <li class="flex items-start gap-3 text-sm text-creamy-900 leading-relaxed">
+        <span class="material-symbols-outlined text-emerald-600 text-lg flex-shrink-0 mt-0.5">check_circle</span>
+        <span>${p}</span>
+      </li>
+    `).join('');
+
+    const consList = (parsed.cons || []).map(c => `
+      <li class="flex items-start gap-3 text-sm text-creamy-900 leading-relaxed">
+        <span class="material-symbols-outlined text-rose-500 text-lg flex-shrink-0 mt-0.5">cancel</span>
+        <span>${c}</span>
+      </li>
+    `).join('');
+
+    el.innerHTML = `
+      <div class="matcher-dashboard flex flex-col gap-6 w-full py-2">
+        <!-- Rating Circle Card -->
+        <div class="flex flex-col sm:flex-row items-center justify-between p-6 rounded-xl border border-creamy-300/80 bg-creamy-50/50 shadow-sm gap-6">
+          <div class="flex flex-col gap-1 text-center sm:text-left">
+            <span class="text-xs uppercase tracking-widest text-creamy-800 font-semibold">Match Score</span>
+            <h3 class="text-2xl heading-tnr text-creamy-950 font-bold">Overall Fit Rating</h3>
+            <p class="text-xs text-creamy-800 desc-tnr max-w-sm">Quantitative candidate match evaluation derived from candidate background vs job requirements.</p>
+          </div>
+          
+          <div class="relative flex items-center justify-center flex-shrink-0">
+            <svg class="w-28 h-28 transform -rotate-90" viewBox="0 0 100 100">
+              <circle cx="50" cy="50" r="42" stroke="#e0ddd6" stroke-width="8" fill="transparent" />
+              <circle cx="50" cy="50" r="42" stroke="${scoreColor}" stroke-width="8" stroke-dasharray="${circumference}" stroke-dashoffset="${circumference}" stroke-linecap="round" fill="transparent" style="transition: stroke-dashoffset 1.2s ease-in-out; stroke-dashoffset: ${offset};" />
+            </svg>
+            <div class="absolute flex flex-col items-center justify-center">
+              <span class="text-2xl font-bold tracking-tight font-sans" style="color: ${scoreColor}">${score}</span>
+              <span class="text-[10px] text-creamy-800 font-medium tracking-wide">/ 100</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Pros & Cons Section -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <!-- Pros -->
+          <div class="p-6 rounded-xl border border-emerald-200/80 bg-emerald-50/20 shadow-sm flex flex-col gap-4">
+            <div class="flex items-center gap-2 pb-3 border-b border-emerald-200/60">
+              <span class="material-symbols-outlined text-emerald-600">thumb_up</span>
+              <h4 class="text-lg heading-tnr font-bold text-creamy-950">Why Hire / Strengths</h4>
+            </div>
+            <ul class="flex flex-col gap-3">
+              ${prosList || '<li class="text-xs text-creamy-800 italic">No specific strengths identified.</li>'}
+            </ul>
+          </div>
+
+          <!-- Cons -->
+          <div class="p-6 rounded-xl border border-rose-200/80 bg-rose-50/20 shadow-sm flex flex-col gap-4">
+            <div class="flex items-center gap-2 pb-3 border-b border-rose-200/60">
+              <span class="material-symbols-outlined text-rose-500">thumb_down</span>
+              <h4 class="text-lg heading-tnr font-bold text-creamy-950">Knowledge Gaps / Concerns</h4>
+            </div>
+            <ul class="flex flex-col gap-3">
+              ${consList || '<li class="text-xs text-creamy-800 italic">No major gaps identified.</li>'}
+            </ul>
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+  function runFormatter() { callAPI('format','fmt-load','fmt-out','fmt-err','fmt-btn', false); }
+  function runMatcher() { callAPI('match','mat-load','mat-out','mat-err','mat-btn', true); }
+  function runAnalyzer() { callAPI('keywords','kw-load','kw-out','kw-err','kw-btn', false); }
+
+  async function generateJD() {
+    const file = document.getElementById('global-file').files[0];
+    if(!file) {
+      alert('Please upload a Resume PDF first to generate a tailored JD.');
+      return;
+    }
+    const btn = document.getElementById('gen-jd-btn');
+    const jdBox = document.getElementById('global-jd');
+    const originalText = btn.innerHTML;
+    
+    btn.disabled = true;
+    btn.innerHTML = '<span class="material-symbols-outlined animate-spin text-[14px]">sync</span> Generating...';
+    jdBox.innerHTML = 'Analyzing resume to generate Job Description...';
+    
+    const fd = new FormData();
+    fd.append('resume', file);
+    fd.append('action', 'generate_jd');
+    
+    try {
+      const res = await fetch('/api/analyze', { method: 'POST', body: fd });
+      const data = await res.json();
+      if(res.ok && data.result) {
+        if(typeof marked !== 'undefined') {
+          jdBox.innerHTML = marked.parse(data.result);
+        } else {
+          jdBox.innerText = data.result;
+        }
+      } else {
+        jdBox.innerHTML = '';
+        alert('Generation failed: ' + (data.error || 'Unknown error'));
+      }
+    } catch (e) {
+      jdBox.innerHTML = '';
+      alert('Error: ' + e.message);
+    } finally {
+      btn.disabled = false;
+      btn.innerHTML = originalText;
+    }
+  }
+
+  // -- 3D Particle Wave Interaction --
+  const canvas = document.getElementById('wave-canvas');
+  if(canvas) {
+    const ctx = canvas.getContext('2d');
+    let width, height;
+    
+    // Wave parameters
+    const SEPARATION = 25;
+    const AMOUNTX = 100;
+    const AMOUNTY = 100;
+    
+    let particles = [];
+    let count = 0;
+    let mouseX = window.innerWidth / 2;
+    let mouseY = window.innerHeight / 2;
+    
+    function initWave() {
+      width = window.innerWidth;
+      height = window.innerHeight;
+      canvas.width = width;
+      canvas.height = height;
+      
+      particles = [];
+      for (let ix = 0; ix < AMOUNTX; ix++) {
+        for (let iy = 0; iy < AMOUNTY; iy++) {
+          particles.push({
+            x: ix,
+            y: iy,
+            origX: ix * SEPARATION - ((AMOUNTX * SEPARATION) / 2),
+            origZ: iy * SEPARATION - ((AMOUNTY * SEPARATION) / 2),
+          });
+        }
+      }
+    }
+    
+    function renderWave() {
+      requestAnimationFrame(renderWave);
+      
+      // Clear with slight transparency for trailing effect (optional, disabled for crispness)
+      ctx.clearRect(0, 0, width, height);
+      
+      // Interaction offset from mouse
+      const targetRotationX = (mouseY - height / 2) * 0.0005;
+      const targetRotationY = (mouseX - width / 2) * 0.0005;
+      
+      ctx.fillStyle = '#a3a19b';
+      
+      let i = 0;
+      for (let ix = 0; ix < AMOUNTX; ix++) {
+        for (let iy = 0; iy < AMOUNTY; iy++) {
+          const particle = particles[i++];
+          
+          // Calculate 3D wave height
+          const waveHeight = (Math.sin((ix + count) * 0.3) * 50) + (Math.sin((iy + count) * 0.5) * 50);
+          
+          // 3D to 2D projection (simple perspective)
+          const fov = 350;
+          const viewDistance = 250;
+          
+          // Apply slight mouse rotation
+          const z = particle.origZ + viewDistance;
+          // Only draw if in front of camera
+          if (z > 0) {
+            const scale = fov / z;
+            
+            // X position (centered + projected)
+            let x2d = (particle.origX * scale) + (width / 2) + (mouseX - width/2) * 0.1;
+            // Y position (centered + wave height + projected + lower on screen)
+            let y2d = (waveHeight * scale) + (height / 2) + 200 + (mouseY - height/2) * 0.05;
+            
+            // Particle size based on depth
+            const r = Math.max(0.1, 2 * scale);
+            
+            // Repulsion effect near mouse pointer
+            const dx = x2d - mouseX;
+            const dy = y2d - mouseY;
+            const dist = Math.sqrt(dx * dx + dy * dy);
+            // Increased repulsion radius to make the "hole" more obvious given higher particle density
+            if (dist < 150 && dist > 0) {
+              const force = (150 - dist) / 150;
+              const pushX = (dx / dist) * force * 60; // Max displacement 60px
+              const pushY = (dy / dist) * force * 60;
+              x2d += pushX;
+              y2d += pushY;
+            }
+            
+            ctx.beginPath();
+            ctx.arc(x2d, y2d, r, 0, Math.PI * 2);
+            ctx.fill();
+          }
+        }
+      }
+      
+      count += 0.04;
+    }
+    
+    window.addEventListener('resize', initWave);
+    window.addEventListener('mousemove', (e) => {
+      mouseX = e.clientX;
+      mouseY = e.clientY;
+    });
+    
+    initWave();
+    renderWave();
+  }
+</script>
+
+</body>
+</html>
